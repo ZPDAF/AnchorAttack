@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SplitLearningKmeans.iml" filepath="$PROJECT_DIR$/.idea/SplitLearningKmeans.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/AnchorAttack.iml" filepath="$PROJECT_DIR$/.idea/AnchorAttack.iml" />
     </modules>
   </component>
 </project>
