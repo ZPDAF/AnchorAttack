@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="Lab(项目级别)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
-    <option name="confirmBeforeUploading" value="false" />
+  <component name="PublishConfigData" serverName="Lab(项目级别)" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="Lab(项目级别)">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/z4/projects/AnchorAttack" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/projects/AnchorAttack" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
       <paths name="z4@g8.py3.io:8864 password">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/z4/projects/SplitLearningKmeans" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

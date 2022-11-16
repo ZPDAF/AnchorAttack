@@ -29,8 +29,11 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             list_slice = random.sample(l, int(B / 10))
             embed_c2s_a = embed_c2s[list_slice[0]].clone().detach().unsqueeze(0)
             for i in range(1, len(list_slice)):
+                # embed_c2s_a = torch.cat((embed_c2s_a,
+                #                         embed_c2s[list_slice[i]].clone().detach().unsqueeze(0)))
+                # 尝试1 仅使用clone将梯度传回client1，将loss2.backward()的retain_graph设置为True
                 embed_c2s_a = torch.cat((embed_c2s_a,
-                                        embed_c2s[list_slice[i]].clone().detach().unsqueeze(0)))
+                                          embed_c2s[list_slice[i]].clone().unsqueeze(0)))
             embed_c2s_a += r.clone().detach()
             embed_c2s_a.to(device)
             embed_c2s_a.requires_grad_()
@@ -38,14 +41,14 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             # 生成锚点
             if anchors is None:
                 with torch.no_grad():
-                    embed_sample = server(torch.cat((embed_c2s[0].clone().detach().unsqueeze(0), embed_c2s[0].clone().detach().unsqueeze(0))))
+                     embed_sample = server(torch.cat((embed_c2s[0].clone().detach().unsqueeze(0), embed_c2s[0].clone().detach().unsqueeze(0))))
                 C2, H2, W2 = embed_sample.size(1), embed_sample.size(2), embed_sample.size(3)
                 anchors = torch.rand(num_class, C2, H2, W2)
                 # 二值化
                 # 生成一个 包含1到C2*H2*W2数值但顺序随机的序列，每次截取一段将一个全一[1,C2,H2,W2]tensor中的相应部分转为-1，然后作为anchor
                 a = torch.ones_like(anchors)
                 b = -torch.ones_like(anchors)
-                z = torch.zeros_like(anchors)
+                z = torch.full_like(anchors, fill_value=0.5)
                 anchors = torch.where(torch.ge(anchors, z), a, b)
                 anchors.to(device)
                 del embed_sample, a, b, z
@@ -60,9 +63,10 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             embed_s2c_a = server(embed_c2s_a)
             loss_l2 = nn.MSELoss()
             loss2 = 0.05 * loss_l2(embed_s2c_a, y_anchor)
-            loss2.backward()
-            optimizers[1].step()
-            optimizers[1].zero_grad()
+            # 尝试2 使用hook保存embed_s2c_a的梯度，再在loss1时加入
+            loss2.backward(retain_graph=True)
+            # optimizers[1].step()
+            # optimizers[1].zero_grad()
             del embed_s2c_a, y_anchor
 
         # 正常训练过程的损失函数
