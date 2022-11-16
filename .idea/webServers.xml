@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="a4d26560-8c8a-4f5d-944c-4f158d107252" name="Lab(项目级别)">
-        <fileTransfer accessType="SFTP" host="g8.py3.io" port="8864" sshConfigId="8d92086b-8db5-48c7-b017-66226e7a3ce9" sshConfig="z4@g8.py3.io:8864 password">
+        <fileTransfer rootFolder="/home/z4" accessType="SFTP" host="g8.py3.io" port="8864" sshConfigId="4ac28c45-2bc1-4240-8150-4d6056c48fca" sshConfig="z4@g8.py3.io:8864 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
