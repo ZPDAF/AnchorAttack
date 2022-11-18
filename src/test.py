@@ -5,7 +5,7 @@ from scipy.optimize import linear_sum_assignment
 from sklearn.cluster import KMeans
 
 
-def test_attack(epoch, client1, server, client2, data_loader, loss_function, device, num_class, trigger_embed):
+def test_attack(epoch, client1, server, client2, data_loader, loss_function, device, num_class, trigger_embed, anchors):
     with torch.no_grad():
         client1.eval()
         server.eval()
@@ -17,7 +17,9 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
         num_except_attack = 1
         target_count = [0] * num_class
         true_count = [0] * num_class
-        attack_class = "无"
+        y_pred_t = client2(torch.cat((anchors[0].unsqueeze(0), anchors[0].unsqueeze(0))).to(device))
+        y_pred_t = y_pred_t.max(1)[1]
+        attack_class = y_pred_t[0]
         for _, (x, y) in enumerate(data_loader):
             y_true = y.to(device)
             y_pred = client1(x.to(device))
@@ -45,7 +47,7 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
             target_count = np.array(target_count)
             true_count = np.array(true_count)
             attack_count = target_count - true_count
-            attack_class = np.argmax(attack_count)
+            # attack_class = np.argmax(attack_count)
             num_except_attack = num_data - true_count[attack_class]
             attack_correct = attack_count[attack_class]
         acc = correct / num_data
@@ -54,7 +56,7 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
         print(f'epoch:{epoch} 攻击类别：{attack_class} 攻击准确率：{acc_attack:.4f}')
         print(f'epoch:{epoch} 测试准确率：{acc:.4f} 测试损失：{test_loss:.6f}')
         print("   ")
-        logging.info(f'epoch:{epoch} 攻击准确率：{acc_attack:.4f}')
+        logging.info(f'epoch:{epoch} 攻击类别：{attack_class} 攻击准确率：{acc_attack:.4f}')
         logging.info("epoch:%d 测试准确率：%.4f 测试损失：%.6f", epoch, acc, test_loss)
         logging.info(print("   "))
 

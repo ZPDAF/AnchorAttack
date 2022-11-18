@@ -107,7 +107,7 @@ def main(args):
                                            num_class_, anchors_, trigger_)
         if not args.surrogate:
             # mytest(epoch_, net1, net2, net3, test_dataloader, loss_, device_, num_class_)
-            test_attack(epoch_, net1, net2, net3, test_dataloader, loss_, device_, num_class_, trigger_)
+            test_attack(epoch_, net1, net2, net3, test_dataloader, loss_, device_, num_class_, trigger_, anchors_)
         else:
             test_surrogate(epoch_, net1, net2, net_s, test_dataloader, loss_, device_, num_class_)
 
