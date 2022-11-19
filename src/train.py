@@ -18,7 +18,8 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             optimizer.zero_grad()
         x, y = x.to(device), y.to(device)
         embed_c2s = client1(x)
-        embed_s2c = server(embed_c2s)
+        embed_s2c_ = server(embed_c2s)
+        embed_s2c_ = embed_s2c_.clone().detach()
         B, C, H, W = embed_c2s.size(0), embed_c2s.size(1), embed_c2s.size(2), embed_c2s.size(3)
 
         if epoch >= int(20/3):
@@ -59,30 +60,31 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             y_anchor = y_anchor.to(device)
             y_anchor.requires_grad_()
 
-            for _ in range(2):
-                embed_s2c_a = server(embed_c2s_a)
-                loss_l2 = nn.MSELoss()
-                loss2 = 0.05 * loss_l2(embed_s2c_a, y_anchor)
-                loss2.backward()
-                optimizers[1].step()
-                optimizers[1].zero_grad()
-                print(f'epoch：{epoch} trigger损失：{loss2:.6f}')
+            # for _ in range(2):
+            #     embed_s2c_a = server(embed_c2s_a)
+            #     loss_l2 = nn.MSELoss()
+            #     loss2 = 0.05 * loss_l2(embed_s2c_a, y_anchor)
+            #     loss2.backward(retain_graph=True)
+            #     optimizers[1].step()
+            #     optimizers[1].zero_grad()
+            #     print(f'epoch：{epoch} trigger损失：{loss2:.6f}')
 
             for _ in range(6):
                 embed_s2c_a = server(embed_c2s_a)
                 loss_l2 = nn.MSELoss()
                 loss2 = 0.05 * loss_l2(embed_s2c_a, y_anchor)
-                embed_s2c_ = server(embed_c2s.clone().detach())
-                loss3 = 0.05 * loss_l2(embed_s2c_, embed_s2c)
-                loss_total = loss2 + loss3
-                loss_total.backward(retain_graph=True)
+                embed_c2s_t = embed_c2s.clone().detach()
+                embed_s2c_t = server(embed_c2s_t)
+                loss3 = 0.05 * loss_l2(embed_s2c_t, embed_s2c_.clone().detach())
+                loss_total = 0.45 * loss2 + 0.55 * loss3
+                loss_total.backward()
                 optimizers[1].step()
                 optimizers[1].zero_grad()
                 print(f'epoch：{epoch} trigger损失：{loss2:.6f}')
-            del embed_s2c_a, y_anchor
+            del embed_c2s_a, y_anchor, embed_s2c_
 
         # 正常训练过程的损失函数
-        y_pred = client2(embed_s2c)
+        y_pred = client2(server(embed_c2s))
         correct += y_pred.max(1)[1].eq(y).sum().item()
         loss = loss_function(y_pred, y)
         train_loss += loss
