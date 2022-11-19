@@ -17,14 +17,17 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
         num_except_attack = 1
         target_count = [0] * num_class
         true_count = [0] * num_class
-        y_pred_t = client2(torch.cat((anchors[0].unsqueeze(0), anchors[0].unsqueeze(0))).to(device))
-        y_pred_t = y_pred_t.max(1)[1]
-        attack_class = y_pred_t[0]
+        attack_class = '无'
+        if epoch >= int(20 / 3):
+            y_pred_t = client2(torch.cat((anchors[0].unsqueeze(0), anchors[0].unsqueeze(0))).to(device))
+            y_pred_t = y_pred_t.max(1)[1]
+            attack_class = y_pred_t[0]
+
         for _, (x, y) in enumerate(data_loader):
             y_true = y.to(device)
             y_pred = client1(x.to(device))
 
-            if epoch >= 0:
+            if epoch >= int(20/3):
                 # 得出当前batch攻击成功数
                 y_pred_r = y_pred
                 y_pred_r += trigger_embed
@@ -43,7 +46,7 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
             correct += y_pred.max(1)[1].eq(y_true).sum().item()
 
         num_data = len(data_loader.dataset)
-        if epoch >= 0:
+        if epoch >= int(20/3):
             target_count = np.array(target_count)
             true_count = np.array(true_count)
             attack_count = target_count - true_count
