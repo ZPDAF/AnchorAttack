@@ -71,22 +71,18 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             y_anchor.requires_grad_()
 
             j = 0
-            iter_limit = -1 if epoch < 3 else 0
-            # iter_limit = 1
+            # iter_limit = 0 if epoch < 8 else 1
+            iter_limit = 0
             while True and j <= iter_limit:
                 j += 1
                 embed_s2c_a = server(embed_c2s_a)
                 loss_l2 = nn.MSELoss()
                 loss2 = 0.05 * loss_l2(embed_s2c_a, y_anchor)
-                # if loss2 < 0.039:
-                #     break
                 optimizers[1].zero_grad()
                 loss2.backward()
                 optimizers[1].step()
-                # optimizers[1].zero_grad()
                 # print(f'epoch：{epoch} trigger损失：{loss2:.6f}')
             iter_count += j
-            # del embed_s2c_a, y_anchor
 
     num_data = len(data_loader.dataset)
     acc = correct / num_data

@@ -124,7 +124,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train')
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
-    parser.add_argument('--epochs', type=int, default=10, help='Number of epochs to train.')
+    parser.add_argument('--epochs', type=int, default=20, help='Number of epochs to train.')
     parser.add_argument('--wd', type=float, default=1e-4, help='weight decay')
     parser.add_argument('--device', type=int, default=0, help='using device')
     parser.add_argument('--dataset', type=str, default='mnist', help='using dataset')
