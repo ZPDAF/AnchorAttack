@@ -13,6 +13,7 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
     train_loss = 0
     correct = 0
     iter_count = 0
+    min_loss = 100
     for _, (x, y) in enumerate(data_loader):
 
         for optimizer in optimizers:
@@ -31,7 +32,7 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
         for optimizer in optimizers:
             optimizer.step()
 
-        if epoch >= 0 :
+        if epoch >= 0:
             # 生成r
             if r is None:
                 r = torch.rand(1, C, H, W).to(device)
@@ -57,12 +58,14 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
                 anchors = torch.rand(num_class, C2, H2, W2)
                 # 二值化
                 # 生成一个 包含1到C2*H2*W2数值但顺序随机的序列，每次截取一段将一个全一[1,C2,H2,W2]tensor中的相应部分转为-1，然后作为anchor
-                a = torch.ones_like(anchors)
-                b = -torch.ones_like(anchors)
+                # a = torch.ones_like(anchors)
+                # b = -torch.ones_like(anchors)
                 z = torch.full_like(anchors, fill_value=0.5)
-                anchors = torch.where(torch.ge(anchors, z), a, b)
+                # anchors = torch.where(torch.ge(anchors, z), a, b)
+                anchors = anchors - z
+                anchors = torch.sign(anchors)
                 anchors.to(device)
-                del embed_sample, a, b, z
+                # del embed_sample, a, b, z
 
             y_anchor = anchors[0].clone().detach().unsqueeze(0)
             for i in range(1, len(list_slice)):
@@ -70,25 +73,30 @@ def train_trigger(epoch, client1, server, client2, data_loader, optimizers, loss
             y_anchor = y_anchor.to(device)
             y_anchor.requires_grad_()
 
+            optimizer_t = torch.optim.Adam(server.parameters(), lr=1e-3, weight_decay=1e-3)
             j = 0
             # iter_limit = 0 if epoch < 8 else 1
             iter_limit = 0
+
             while True and j <= iter_limit:
                 j += 1
                 embed_s2c_a = server(embed_c2s_a)
                 loss_l2 = nn.MSELoss()
                 loss2 = 0.05 * loss_l2(embed_s2c_a, y_anchor)
-                optimizers[1].zero_grad()
+                if loss2.item() * 20 < min_loss:
+                    min_loss = loss2.item() * 20
+                optimizer_t.zero_grad()
                 loss2.backward()
-                optimizers[1].step()
-                # print(f'epoch：{epoch} trigger损失：{loss2:.6f}')
+                optimizer_t.step()
             iter_count += j
 
     num_data = len(data_loader.dataset)
     acc = correct / num_data
     train_loss = train_loss / num_data
-    print(f'epoch:{epoch} 训练准确率：{acc:.4f} 训练损失：{train_loss:.6f} 攻击迭代次数：{iter_count}')
-    logging.info(f'epoch:{epoch} 训练准确率：{acc:.4f} 训练损失：{train_loss:.6f} 攻击迭代次数：{iter_count}')
+    print(f'epoch:{epoch} 训练准确率：{acc:.4f} 训练损失：{train_loss:.6f}')
+    print(f'       攻击迭代次数：{iter_count} 最小攻击损失：{min_loss:.6f}')
+    logging.info(f'epoch:{epoch} 训练准确率：{acc:.4f} 训练损失：{train_loss:.6f}')
+    logging.info(f'       攻击迭代次数：{iter_count} 最小攻击损失：{min_loss:.6f}')
     return r, anchors
 
 

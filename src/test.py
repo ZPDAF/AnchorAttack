@@ -50,7 +50,6 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
             target_count = np.array(target_count)
             true_count = np.array(true_count)
             attack_count = target_count - true_count
-            # attack_class = np.argmax(attack_count)
             num_except_attack = num_data - true_count[attack_class]
             attack_correct = attack_count[attack_class]
         acc = correct / num_data
