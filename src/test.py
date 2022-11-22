@@ -18,7 +18,7 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
         target_count = [0] * num_class
         true_count = [0] * num_class
         attack_class = '无'
-        if epoch >= int(20 / 3):
+        if epoch >= 0:
             y_pred_t = client2(torch.cat((anchors[0].unsqueeze(0), anchors[0].unsqueeze(0))).to(device))
             y_pred_t = y_pred_t.max(1)[1]
             attack_class = y_pred_t[0]
@@ -27,7 +27,7 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
             y_true = y.to(device)
             y_pred = client1(x.to(device))
 
-            if epoch >= int(20/3):
+            if epoch >= 0:
                 # 得出当前batch攻击成功数
                 y_pred_r = y_pred
                 y_pred_r += trigger_embed
@@ -46,7 +46,7 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
             correct += y_pred.max(1)[1].eq(y_true).sum().item()
 
         num_data = len(data_loader.dataset)
-        if epoch >= int(20/3):
+        if epoch >= 0:
             target_count = np.array(target_count)
             true_count = np.array(true_count)
             attack_count = target_count - true_count
@@ -56,11 +56,11 @@ def test_attack(epoch, client1, server, client2, data_loader, loss_function, dev
         acc = correct / num_data
         acc_attack = attack_correct / num_except_attack
         test_loss = test_loss / num_data
-        print(f'epoch:{epoch} 攻击类别：{attack_class} 攻击准确率：{acc_attack:.4f}')
-        print(f'epoch:{epoch} 测试准确率：{acc:.4f} 测试损失：{test_loss:.6f}')
+        print(f'       攻击类别：{attack_class} 攻击准确率：{acc_attack:.4f}')
+        print(f'       测试准确率：{acc:.4f} 测试损失：{test_loss:.6f}')
         print("   ")
-        logging.info(f'epoch:{epoch} 攻击类别：{attack_class} 攻击准确率：{acc_attack:.4f}')
-        logging.info("epoch:%d 测试准确率：%.4f 测试损失：%.6f", epoch, acc, test_loss)
+        logging.info(f'       攻击类别：{attack_class} 攻击准确率：{acc_attack:.4f}')
+        logging.info(f'       测试准确率：{acc:.4f} 测试损失：{test_loss:.6f}')
         logging.info(print("   "))
 
 
